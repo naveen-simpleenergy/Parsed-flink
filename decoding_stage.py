@@ -12,6 +12,7 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 
+
 KAFKA_BROKER = os.getenv("KAFKA_BROKER")
 KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
 KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")

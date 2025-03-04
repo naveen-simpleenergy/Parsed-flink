@@ -1,3 +1,5 @@
 .env
 pyflink_env/
 jars/
+*ipynb
+*.tgz
