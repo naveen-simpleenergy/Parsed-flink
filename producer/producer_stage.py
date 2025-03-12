@@ -1,5 +1,25 @@
-from interface import Stage, ProducerInterface
+from interface import  Stage, ProducerInterface
 from typing import Any, Dict
+from pyflink.datastream.functions import RichFlatMapFunction
+
+class FlinkProducerStage(RichFlatMapFunction):
+    def __init__(self, config, topic_path):
+        self.config = config
+        self.topic_path = topic_path
+        
+    def open(self, runtime_context):
+        # Initialize ON WORKER (not during serialization)
+        self.producer_stage = ProducerStage(
+            KafkaDataProducer(self.config, self.topic_path)
+        )
+        
+    def flat_map(self, value):
+        try:
+            # Process through your existing pipeline
+            self.producer_stage.execute(value)
+            yield f"Processed VIN {value.vin}"  # Dummy output to continue stream
+        except Exception as e:
+            yield f"Error processing {value.vin}: {str(e)}"
 
 class ProducerStage(Stage):
     """
