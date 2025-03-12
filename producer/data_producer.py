@@ -1,16 +1,16 @@
 import json
 from logger import log
 from cantools.database.namedsignalvalue import NamedSignalValue
-from .base_producer import KafkaProducer
-from utils.message_payload import MessagePayload
+from .base_producer import CustomKafkaProducer
+from utils import MessagePayload
 import logging
 
-class KafkaDataProducer(KafkaProducer):
+class KafkaDataProducer(CustomKafkaProducer):
     """
     Kafka producer for standard data messages, handling serialization and topic-specific production.
     """
-    def __init__(self, brokers, topic_path):
-        super().__init__(brokers)
+    def __init__(self, config, topic_path):
+        super().__init__(config)
         
         with open(topic_path, 'r') as file:
             self.topics = json.load(file)
@@ -20,9 +20,10 @@ class KafkaDataProducer(KafkaProducer):
         Process and send data to specific Kafka topics based on the data content.
         """
         payload.kafka_producer_error = []
+        serialized_processed_data = self.convert_to_serializable(payload.filtered_signal_value_pair)  
         vin = payload.vin
         event_time = payload.event_time
-        topics_data = self.prepare_topics_data(payload.filtered_signal_value_pair, vin, event_time)
+        topics_data = self.prepare_topics_data(serialized_processed_data, vin, event_time)
                     
         for topic, data in topics_data.items():
             try:
@@ -59,6 +60,7 @@ class KafkaDataProducer(KafkaProducer):
         
         super().flush()
         log(f"[Data Producer]: Message batch for VIN {payload.vin} is processed.", level=logging.INFO)
+        return topics_data
     
     def prepare_topics_data(self, signal_value_map, vin, event_time):
         """
@@ -77,7 +79,18 @@ class KafkaDataProducer(KafkaProducer):
             topics_data[topic][key] = value
             
         return topics_data
-
+    
+    def convert_to_serializable(self, data_item):
+        """
+        Convert data including NamedSignalValue to serializable formats.
+        """
+        if isinstance(data_item, dict):
+            return {key: self.convert_to_serializable(val) for key, val in data_item.items()}
+        elif isinstance(data_item, list):
+            return [self.convert_to_serializable(elem) for elem in data_item]
+        elif isinstance(data_item, NamedSignalValue):
+            return data_item.value if hasattr(data_item, 'value') else str(data_item)
+        return data_item
     
     def create_key(self, vin, event_time):
         """

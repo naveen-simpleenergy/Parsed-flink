@@ -1,21 +1,47 @@
-from stages.decoding_stage import CANMessageDecoder
-from utils.message_payload import MessagePayload
-from utils.config import KafkaConfig
-from utils.flink_setup import setup_flink_environment
+from producer import KafkaDataProducer, KafkaProducer
+from stages import CANMessageDecoder, FaultFilter
+from utils import KafkaConfig, MessagePayload, setup_flink_environment
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
-from stages.filtering_stage import FaultFilter
 from pyflink.common import Duration
+from dotenv import load_dotenv
+load_dotenv()
+
 import json
+import os
 import cantools
 import sys
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 DBC_FILE_PATH = './dbc_files/SimpleOneGen1_V2_2.dbc'
+
+def process_and_log(payload, kafka_producer):
+    result = kafka_producer.send_data(payload)
+    logging.info(f"Processed data for VIN {payload.vin}:")
+    for topic, data in result.items():
+        logging.info(f"  Topic: {topic}")
+        logging.info(f"  Data: {json.dumps(data, indent=2)}")
+    return result
 
 def main():
     env = setup_flink_environment(parallelism=1)
     kafka_source = KafkaConfig.create_kafka_source()
+    kafka_output_config = {
+            'brokers': os.getenv("STAGE_KAFKA_BROKER").split(','),
+            'security_protocol': os.getenv("SECURITY_PROTOCOL"),
+            'sasl_mechanism': os.getenv("SASL_MECHANISMS"),
+            'sasl_username': os.getenv("STAGE_KAFKA_USERNAME"),
+            'sasl_password': os.getenv("STAGE_KAFKA_PASSWORD"),
+        }
+    
+    print(kafka_output_config["brokers"])
+
     print("Kafka source setup complete")
+
+    kafka_producer = KafkaDataProducer(kafka_output_config,"signalTopic.json")
 
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
     fault_filter = FaultFilter(json_file="signalTopic.json")
@@ -23,53 +49,14 @@ def main():
     watermark_strategy = WatermarkStrategy.for_bounded_out_of_orderness(Duration.of_millis(5000))
     data_stream = env.from_source(source=kafka_source, watermark_strategy=watermark_strategy, source_name="Kafka Source")
 
-    # processed_stream = (
-    #     data_stream
-    #     .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-    #     .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-    #     .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-    #     .map(lambda x: x.filtered_signal_value_pair, output_type=Types.STRING()) 
-    # )
+    processed_stream = (data_stream
+                        .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(lambda x: process_and_log(x, kafka_producer))
+                        )
 
-    # processed_stream.print() 
-    
-    print("halo")
-    class ProcessMap(object):
-
-        def __init__(self, dbc_load):
-            self.dbc_load = dbc_load
-
-        def map_ghoda(self, value):
-            data = json.loads(value)
-            
-            hex_can_id = data['raw_can_id']
-            int_can_id = int(str(hex_can_id), 16) & 0x1FFFFFFF
-
-            decoded_can_ID = dbc_load.get_message_by_frame_id(int_can_id)
-
-            byte_array = bytearray([
-                data.pop('byte1'),
-                data.pop('byte2'),
-                data.pop('byte3'),
-                data.pop('byte4'),
-                data.pop('byte5'),
-                data.pop('byte6'),
-                data.pop('byte7'),
-                data.pop('byte8')
-            ])
-            
-            decoded_signals =  decoded_can_ID.decode(byte_array,decode_choices=False)
-            
-            return json.dumps(decoded_signals)
-
-    dbc_load = cantools.database.load_file(DBC_FILE_PATH) 
-
-    data_stream = env.from_source(source=kafka_source, watermark_strategy = watermark_strategy, source_name="Kafka Source")
-
-    process_map = ProcessMap(dbc_load)
-    
-    data_stream.map(process_map.map_ghoda, output_type=Types.STRING()) \
-        .print()
+    processed_stream.print() 
 
     env.execute("Flink parser")
 
