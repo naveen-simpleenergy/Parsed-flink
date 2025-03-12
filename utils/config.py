@@ -7,9 +7,9 @@ from pyflink.common.serialization import SimpleStringSchema
 load_dotenv()
 
 class KafkaConfig:
-    KAFKA_BROKER = os.getenv("KAFKA_BROKER")
-    KAFKA_USERNAME = os.getenv("KAFKA_USERNAME")
-    KAFKA_PASSWORD = os.getenv("KAFKA_PASSWORD")
+    KAFKA_BROKER = os.getenv("PROD_KAFKA_BROKER")
+    KAFKA_USERNAME = os.getenv("PROD_KAFKA_USERNAME")
+    KAFKA_PASSWORD = os.getenv("PROD_KAFKA_PASSWORD")
     INPUT_TOPIC = os.getenv("INPUT_TOPIC")
     CONSUMER_GROUP_ID = os.getenv("CONSUMER_GROUP_ID")
     SASL_MECHANISMS = os.getenv("SASL_MECHANISMS", "SCRAM-SHA-256")
@@ -28,6 +28,7 @@ class KafkaConfig:
             .set_property("sasl.jaas.config",
                           f"org.apache.kafka.common.security.scram.ScramLoginModule required "
                           f"username='{KafkaConfig.KAFKA_USERNAME}' password='{KafkaConfig.KAFKA_PASSWORD}';") \
+            .set_property("enable.auto.commit", "false")\
             .build()
     
     @staticmethod
@@ -43,4 +44,5 @@ class KafkaConfig:
                           f"username='{KafkaConfig.KAFKA_USERNAME}' password='{KafkaConfig.KAFKA_PASSWORD}';") \
             .set_topic(KafkaConfig.OUTPUT_TOPIC) \
             .build()
-
+    
+    
