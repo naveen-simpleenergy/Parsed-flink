@@ -1,13 +1,13 @@
 import json
 from confluent_kafka import Producer, KafkaError
-from logger import log
+from .logger import log
 import time
 import psutil
-# from interface import ProducerInterface
+from interface import ProducerInterface
 
 import logging
 
-class KafkaProducer():
+class KafkaProducer(ProducerInterface):
     """
     Base class for Kafka producers, providing common functionalities for producing messages.
     
@@ -22,11 +22,11 @@ class KafkaProducer():
             brokers (List[str]): A list of Kafka broker addresses.
         """
         self.producer = Producer({
-            'bootstrap.servers': ", ".join(config['brokers']),
+            'bootstrap.servers': config['brokers'],
             'security.protocol': config['security_protocol'],
-            'sasl.mechanism': config['sasl_mechanism'],
-            'sasl.username': config['sasl_username'],
-            'sasl.password': config['sasl_password'],
+            'sasl.mechanism': config['sasl_mechanisms'],  
+            'sasl.username': config['username'],        
+            'sasl.password': config['password'],       
             'linger.ms': 10,
             'compression.type': 'snappy',
             'batch.num.messages': 20000,
@@ -38,7 +38,8 @@ class KafkaProducer():
             'retries': 10,
             'retry.backoff.ms': 500,
             'max.in.flight.requests.per.connection': 5
-        })
+})
+
 
     def delivery_report(self, err, msg):
         if err is not None:

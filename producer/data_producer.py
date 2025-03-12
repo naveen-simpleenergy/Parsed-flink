@@ -1,7 +1,8 @@
 import json
-from logger import log
+from .logger import log
 from cantools.database.namedsignalvalue import NamedSignalValue
 from .base_producer import KafkaProducer
+
 from utils.message_payload import MessagePayload
 import logging
 
