@@ -1,7 +1,9 @@
 .env
 pyflink_env/
+myenv/
 jars/
 *ipynb
 *.tgz
 __pycache__/
 dbc_files/
+
