@@ -1,16 +1,11 @@
-from interface.stage import Stage
-from signal_decoding_stage import CANDecoder        
 import json
-import cantools
-from typing import Dict,str
-from utils.message_payload import MessagePayload
-
-                
-class FaultFilter:
+from typing import Dict
+from utils.message_payload import MessagePayload       
+from interface import Stage
+class FaultFilter(Stage):
     def __init__(self, json_file='signalTopic.json'):
         self.fault_signals = self._load_fault_signals(json_file)
     
-
     def execute(self, payload: MessagePayload) -> None:
         """
         Filter out fault signals from the payload data.
@@ -19,6 +14,8 @@ class FaultFilter:
             payload (MessagePayload): The message payload to filter.
         """
         payload.filtered_signal_value_pair = self.filter_faults(payload.signal_value_pair)
+
+        return payload
         
     def _load_fault_signals(self, filepath: str) -> set:
         try:

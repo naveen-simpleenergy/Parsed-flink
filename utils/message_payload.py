@@ -1,7 +1,6 @@
 from typing import Dict, Any
 import json
 
-
 class MessagePayload:
     """
     Manages the payload of messages, handling user information, compressed data, and processing errors.
