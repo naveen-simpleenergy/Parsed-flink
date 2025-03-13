@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- Python 3.8+
+- python>=3.8,<3.12
 - java 11.x
 - flink version : 1.20
 - flink jars : kafka-clients-3.4.0.jar
