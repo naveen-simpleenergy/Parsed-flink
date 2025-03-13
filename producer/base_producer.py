@@ -13,7 +13,7 @@ class CustomKafkaProducer():
     Base class for Kafka producers, providing common functionalities for producing messages.
     
     Attributes:
-        producer (Producer): Confluent Kafka Producer instance.
+        producer (Producer):  Kafka Producer instance.
     """
     def __init__(self, config):
         """
@@ -22,6 +22,7 @@ class CustomKafkaProducer():
         Args:
             brokers (List[str]): A list of Kafka broker addresses.
         """
+
         self.producer = KafkaProducer(
             bootstrap_servers=config['brokers'],
             security_protocol=config['security_protocol'],

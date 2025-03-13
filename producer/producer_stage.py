@@ -1,4 +1,4 @@
-from interface import Stage, ProducerInterface
+from interface import  Stage, ProducerInterface
 from typing import Any, Dict
 
 class ProducerStage(Stage):

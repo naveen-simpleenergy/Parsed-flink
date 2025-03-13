@@ -23,6 +23,9 @@ def main():
             'sasl_username': os.getenv("STAGE_KAFKA_USERNAME"),
             'sasl_password': os.getenv("STAGE_KAFKA_PASSWORD"),
         }
+    
+    kafka_producer = KafkaDataProducer(kafka_output_config,"signalTopic.json")
+
 
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
     fault_filter = FaultFilter(json_file="signalTopic.json")
