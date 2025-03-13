@@ -17,6 +17,7 @@ class KafkaConfig:
 
     @staticmethod
     def create_kafka_source():
+        print("Kafka source setup complete")
         return KafkaSource.builder() \
             .set_bootstrap_servers(KafkaConfig.KAFKA_BROKER) \
             .set_topics(KafkaConfig.INPUT_TOPIC) \
@@ -31,18 +32,5 @@ class KafkaConfig:
             .set_property("enable.auto.commit", "false")\
             .build()
     
-    @staticmethod
-    def create_kafka_sink():
-        return KafkaSink.builder() \
-            .set_bootstrap_servers(KafkaConfig.KAFKA_BROKER) \
-            .set_record_serializer(SimpleStringSchema()) \
-            .set_value_only_serializer(SimpleStringSchema()) \
-            .set_property("security.protocol", KafkaConfig.SECURITY_PROTOCOL) \
-            .set_property("sasl.mechanism", KafkaConfig.SASL_MECHANISMS) \
-            .set_property("sasl.jaas.config",
-                          f"org.apache.kafka.common.security.scram.ScramLoginModule required "
-                          f"username='{KafkaConfig.KAFKA_USERNAME}' password='{KafkaConfig.KAFKA_PASSWORD}';") \
-            .set_topic(KafkaConfig.OUTPUT_TOPIC) \
-            .build()
     
     

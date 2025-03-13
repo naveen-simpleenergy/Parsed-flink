@@ -5,6 +5,8 @@ from logger import log
 import time
 import psutil
 import logging
+import sys
+
 
 class CustomKafkaProducer():
     """
@@ -42,10 +44,20 @@ class CustomKafkaProducer():
         try:
             encoded_data = json.dumps(data).encode('utf-8')
             encoded_key = json.dumps(key).encode('utf-8') if key is not None else None
+            future = self.producer.send(topic, encoded_data, key=encoded_key)
+
+            # Add proper callback handling
+            future.add_callback(lambda meta: log(
+                f"Delivered to {meta.topic}[{meta.partition}] @ {meta.offset}"
+            ))
+            future.add_errback(lambda exc: log(
+                f"Delivery failed: {exc}", level=logging.ERROR
+            ))
             
-            self.producer.produce(topic, encoded_data, key=encoded_key, callback=self.delivery_report)
-            log(f'[Producer]: Message queued for sending to {topic}', level=logging.INFO)
-            self.producer.poll(0)
+        except Exception as e:
+            log("[Producer] Critical Error", level=logging.CRITICAL, exception=e)
+            raise
+
         except BufferError:
 
             log('[Producer]: Local producer queue is full, consider backing off', level=logging.WARNING)

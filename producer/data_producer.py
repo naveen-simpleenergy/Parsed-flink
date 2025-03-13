@@ -21,6 +21,7 @@ class KafkaDataProducer(CustomKafkaProducer):
         """
         payload.kafka_producer_error = []
         serialized_processed_data = self.convert_to_serializable(payload.filtered_signal_value_pair)  
+    
         vin = payload.vin
         event_time = payload.event_time
         topics_data = self.prepare_topics_data(serialized_processed_data, vin, event_time)
@@ -48,6 +49,8 @@ class KafkaDataProducer(CustomKafkaProducer):
                         )
                         payload.success_counts += 1
                 else:
+                    # print(f"Swastik bolraha topic : {topic} and data : {data}\n")
+
                     super().send_data(
                         key=self.create_key(vin, event_time),
                         data=data, 
