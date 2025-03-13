@@ -25,12 +25,11 @@ def main():
                         .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(lambda x: json.dumps(x.filtered_signal_value_pair),output_type=Types.STRING()))
+                        .map(lambda x: json.dumps(x.signal_value_pair),output_type=Types.STRING()))
 
-    processed_stream.print() 
+    processed_stream.print()
 
     env.execute("Flink parser")
 
 if __name__ == "__main__":
     main()
-

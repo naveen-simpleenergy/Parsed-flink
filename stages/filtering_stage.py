@@ -15,6 +15,7 @@ class FaultFilter(Stage):
             message_json (str): The message payload as JSON string.
         """
         payload.filtered_signal_value_pair = self.filter_faults(payload.signal_value_pair)
+        return payload
 
     def _load_fault_signals(self, filepath: str) -> set:
         try:
