@@ -1,10 +1,9 @@
-from pyflink.datastream.functions import MapFunction
 import json
 from typing import Dict
 from interface.stage import Stage  
 from utils.message_payload import MessagePayload
 
-class FaultFilter(Stage, MapFunction):  
+class FaultFilter(Stage):  
     def __init__(self, json_file='signalTopic.json'):
         self.fault_signals = self._load_fault_signals(json_file)
 

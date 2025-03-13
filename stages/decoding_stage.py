@@ -1,10 +1,9 @@
 import json
 import cantools
-from pyflink.datastream.functions import MapFunction
 from interface.stage import Stage  
 from utils.message_payload import MessagePayload
 
-class CANMessageDecoder(Stage, MapFunction):  
+class CANMessageDecoder(Stage):  
     def __init__(self, dbc_file_path: str):
         self.dbc = cantools.database.load_file(dbc_file_path)
 

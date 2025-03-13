@@ -1,4 +1,3 @@
-
 from producer import KafkaDataProducer, KafkaProducer
 from stages import CANMessageDecoder, FaultFilter
 from utils import KafkaConfig, MessagePayload, setup_flink_environment
@@ -30,6 +29,7 @@ def process_and_log(payload, kafka_producer):
 def main():
     env = setup_flink_environment(parallelism=1)
     kafka_source = KafkaConfig.create_kafka_source()
+
     kafka_output_config = {
             'brokers': os.getenv("STAGE_KAFKA_BROKER").split(','),
             'security_protocol': os.getenv("SECURITY_PROTOCOL"),
@@ -37,28 +37,24 @@ def main():
             'sasl_username': os.getenv("STAGE_KAFKA_USERNAME"),
             'sasl_password': os.getenv("STAGE_KAFKA_PASSWORD"),
         }
-    
-    print(kafka_output_config["brokers"])
-
-    print("Kafka source setup complete")
 
     kafka_producer = KafkaDataProducer(kafka_output_config,"signalTopic.json")
 
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
-    fault_filter = FaultFilter()
-  
+    fault_filter = FaultFilter(json_file="signalTopic.json")
+
     watermark_strategy = WatermarkStrategy.for_bounded_out_of_orderness(Duration.of_millis(5000))
     data_stream = env.from_source(source=kafka_source, watermark_strategy=watermark_strategy, source_name="Kafka Source")
-
 
     processed_stream = (data_stream
                         .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(lambda x: process_and_log(x, kafka_producer))
-                        )
+                        .map(lambda x: json.dumps(x.filtered_signal_value_pair),output_type=Types.STRING()))
+                        
 
     processed_stream.print() 
+
     env.execute("Flink parser")
 
 if __name__ == "__main__":
