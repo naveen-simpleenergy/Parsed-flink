@@ -1,19 +1,20 @@
-from producer import KafkaDataProducer, KafkaSender 
+from producer import KafkaSender 
 from stages import CANMessageDecoder, FaultFilter
-from utils import KafkaConfig, MessagePayload, setup_flink_environment
+from utils import KafkaConfig, MessagePayload, setup_flink_environment, monitor_resources
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.common import Duration
 from dotenv import load_dotenv
 load_dotenv()
-
 import os
+
+import threading
 import sys
 
 DBC_FILE_PATH = './dbc_files/SimpleOneGen1_V2_2.dbc'
 
 def main():
-    env = setup_flink_environment(parallelism=1)
+    env = setup_flink_environment()
     kafka_source = KafkaConfig.create_kafka_source()
 
     kafka_output_config = {
@@ -36,9 +37,13 @@ def main():
                         .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(KafkaSender(kafka_output_config, "signalTopic.json"),output_type=Types.STRING()))
                         
-    processed_stream.print() 
+    # processed_stream.print() 
 
-    env.execute("Flink parser")
+    env.execute("Flink_parser")
 
 if __name__ == "__main__":
+
+    monitor_thread = threading.Thread(target=monitor_resources, daemon=True)
+    monitor_thread.start()
+
     main()
