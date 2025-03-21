@@ -7,11 +7,14 @@ from pyflink.common import Duration
 from dotenv import load_dotenv
 load_dotenv()
 import os
-
 import threading
 import sys
 
-DBC_FILE_PATH = './dbc_files/SimpleOneGen1_V2_2.dbc'
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent
+DBC_FILE_PATH = str(BASE_DIR / "dbc_files/SimpleOneGen1_V2_2.dbc")
+JSON_FILE = str(BASE_DIR / "signalTopic.json")
 
 def main():
     env = setup_flink_environment()
@@ -35,9 +38,9 @@ def main():
                         .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(KafkaSender(kafka_output_config, "signalTopic.json"),output_type=Types.STRING()))
+                        .map(KafkaSender(kafka_output_config, JSON_FILE),output_type=Types.STRING()))
                         
-    # processed_stream.print() 
+    processed_stream.print() 
 
     env.execute("Flink_parser")
 
