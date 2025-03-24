@@ -1,0 +1,41 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: stage-pyflink-job
+  namespace: flink-stage
+spec:
+  serviceAccount: flink
+  mode: native
+  image: 392698013629.dkr.ecr.us-east-1.amazonaws.com/se-flink-job-stage-eks:v1.12  # Updated Image
+  flinkVersion: v1_20
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "4"
+    execution.checkpointing.interval: "30s"
+    execution.checkpointing.timeout: "10min"
+    execution.checkpointing.mode: EXACTLY_ONCE
+    state.checkpoints.dir: "s3://eks-flink-bucket/checkpoints"
+    state.savepoints.dir: "s3://eks-flink-bucket/savepoints"
+    pipeline.jars: local:///opt/flink/lib/flink-connector-kafka-3.4.0-1.20.jar
+    # pipeline.classpaths: "local:///opt/flink/lib/flink-connector-kafka-1.17.2.jar"
+  jobManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  taskManager:
+    resource:
+      memory: "2048m"
+      cpu: 1
+  job:
+    jarURI: local:///opt/flink/lib/flink-connector-kafka-3.4.0-1.20.jar  # Dummy JAR, required for FlinkDeployment
+    args: ["-py", "/opt/pyflink-job/main.py", "--pyFiles", "dependencies.zip"]
+    # args:
+    #   - "--pyExecutable"
+    #   - "/usr/bin/python3"  
+    #   - "--pyfs"
+    #   - "local:///opt/pyflink-job/dependencies.zip"  
+    #   - "--py"
+    #   - "/opt/pyflink-job/main.py"
+    parallelism: 6
+    state: running
+
+ 
