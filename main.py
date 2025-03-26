@@ -1,13 +1,12 @@
 from producer import KafkaSender 
 from stages import CANMessageDecoder, FaultFilter
-from utils import KafkaConfig, MessagePayload, setup_flink_environment, monitor_resources
+from utils import KafkaConfig, MessagePayload, setup_flink_environment
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.common import Duration
 from dotenv import load_dotenv
 load_dotenv()
 import os
-import threading
 
 DBC_FILE_PATH = "dbc_files/SimpleOneGen1_V2_2.dbc"
 JSON_FILE = "signalTopic.json"
