@@ -49,7 +49,6 @@ class KafkaDataProducer(CustomKafkaProducer):
                         )
                         payload.success_counts += 1
                 else:
-                    # print(f"Swastik bolraha topic : {topic} and data : {data}\n")
 
                     super().send_data(
                         key=self.create_key(vin, event_time),

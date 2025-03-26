@@ -2,9 +2,12 @@ import json
 from typing import Dict
 from utils.message_payload import MessagePayload       
 from interface import Stage
+from pathlib import Path
+
 class FaultFilter(Stage):
-    def __init__(self, json_file='signalTopic.json'):
-        self.fault_signals = self._load_fault_signals(json_file)
+    def __init__(self, json_file):
+        json_file_path = f"{Path(__file__).resolve().parent.parent}/{json_file}"
+        self.fault_signals = self._load_fault_signals(json_file_path)
     
     def execute(self, payload: MessagePayload) -> None:
         """

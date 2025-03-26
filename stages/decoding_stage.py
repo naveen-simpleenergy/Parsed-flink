@@ -1,15 +1,17 @@
 import cantools
 from interface import Stage
 from utils.message_payload import MessagePayload
+from pathlib import Path
 
 class CANMessageDecoder(Stage):
-    def __init__(self, dbc_file_path: str):
+    def __init__(self, dbc_file: str):
         """
         Initialize the CANMessageDecoder with a DBC file.
 
         Args:
             dbc_file_path (str): Path to the DBC file.
         """
+        dbc_file_path = f"{Path(__file__).resolve().parent.parent}/{dbc_file}"
         self.dbc = cantools.database.load_file(dbc_file_path)
 
     def execute(self, payload: MessagePayload) -> None:

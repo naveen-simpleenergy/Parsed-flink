@@ -8,13 +8,9 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import threading
-import sys
 
-from pathlib import Path
-
-BASE_DIR = Path(__file__).parent
-DBC_FILE_PATH = str(BASE_DIR / "dbc_files/SimpleOneGen1_V2_2.dbc")
-JSON_FILE = str(BASE_DIR / "signalTopic.json")
+DBC_FILE_PATH = "dbc_files/SimpleOneGen1_V2_2.dbc"
+JSON_FILE = "signalTopic.json"
 
 def main():
     env = setup_flink_environment()
@@ -29,7 +25,7 @@ def main():
         }
 
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
-    fault_filter = FaultFilter(json_file="signalTopic.json")
+    fault_filter = FaultFilter(json_file=JSON_FILE)
 
     watermark_strategy = WatermarkStrategy.for_bounded_out_of_orderness(Duration.of_millis(5000))
     data_stream = env.from_source(source=kafka_source, watermark_strategy=watermark_strategy, source_name="Kafka Source")
@@ -45,8 +41,5 @@ def main():
     env.execute("Flink_parser")
 
 if __name__ == "__main__":
-
-    monitor_thread = threading.Thread(target=monitor_resources, daemon=True)
-    monitor_thread.start()
 
     main()
