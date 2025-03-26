@@ -4,15 +4,18 @@ from utils import KafkaConfig, MessagePayload, setup_flink_environment
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.common import Duration
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 import os
 
-DBC_FILE_PATH = "dbc_files/SimpleOneGen1_V2_2.dbc"
-JSON_FILE = "signalTopic.json"
+BASE_DIR = Path(__file__).parent
+DBC_FILE_PATH = str(BASE_DIR / "dbc_files/SimpleOneGen1_V2_2.dbc")
+JSON_FILE = str(BASE_DIR / "signalTopic.json")
+JAR_FILE_PATH = str(BASE_DIR / "jars/kafka-clients-3.4.0.jar")
 
 def main():
-    env = setup_flink_environment()
+    env = setup_flink_environment(JAR_FILE_PATH)
     kafka_source = KafkaConfig.create_kafka_source()
 
     kafka_output_config = {
