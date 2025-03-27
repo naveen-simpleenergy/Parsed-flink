@@ -7,8 +7,6 @@ def setup_flink_environment(JAR_FILE_PATH):
     parallelism = KafkaConfig.get_kafka_partition_count()
     
     config = Configuration()
-    config.set_string("pipeline.classpaths", f"file://{JAR_FILE_PATH}")
-
     env = StreamExecutionEnvironment.get_execution_environment(configuration=config)
     env.set_parallelism(parallelism)
     env.enable_checkpointing(30000)

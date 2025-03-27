@@ -18,15 +18,8 @@ print(DBC_FILE_PATH)
 def main():
     env = setup_flink_environment(JAR_FILE_PATH)
     kafka_source = KafkaConfig.create_kafka_source()
-
-    kafka_output_config = {
-            'brokers': os.getenv("STAGE_KAFKA_BROKER").split(','),
-            'security_protocol': os.getenv("SECURITY_PROTOCOL"),
-            'sasl_mechanism': os.getenv("SASL_MECHANISMS"),
-            'sasl_username': os.getenv("STAGE_KAFKA_USERNAME"),
-            'sasl_password': os.getenv("STAGE_KAFKA_PASSWORD"),
-        }
-
+    kafka_output_config = KafkaConfig.get_kafka_producer_config()
+    
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
     fault_filter = FaultFilter(json_file=JSON_FILE)
 
