@@ -3,11 +3,9 @@ from pyflink.common import Configuration
 from pathlib import Path
 from .config import KafkaConfig
 
-def setup_flink_environment(JAR_FILE_PATH):
+def setup_flink_environment():
     parallelism = KafkaConfig.get_kafka_partition_count()
-    
     config = Configuration()
-    config.set_string("pipeline.classpaths", f"file://{JAR_FILE_PATH}")
 
     env = StreamExecutionEnvironment.get_execution_environment(configuration=config)
     env.set_parallelism(parallelism)
