@@ -6,7 +6,7 @@ from .config import KafkaConfig
 def setup_flink_environment():
     parallelism = KafkaConfig.get_kafka_partition_count()
     config = Configuration()
-
+    
     env = StreamExecutionEnvironment.get_execution_environment(configuration=config)
     env.set_parallelism(parallelism)
     env.enable_checkpointing(30000)
