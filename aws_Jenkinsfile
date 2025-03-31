@@ -181,7 +181,7 @@ pipeline {
 
                     echo "Tagged - $latestTagInfo"
                     
-                    env.DOCKER_IMAGE_REPOSITORY_NAME="se-website-blog-stage-eks"
+                    env.DOCKER_IMAGE_REPOSITORY_NAME="se-flink-job-stage-eks"
                     
                     
                     sh " docker build -t ${env.DOCKER_IMAGE_REPOSITORY_NAME}:${env.IMAGE_TAG} . "
