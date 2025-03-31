@@ -20,15 +20,16 @@ def main():
     
     can_decoder = CANMessageDecoder(DBC_FILE_PATH)
     fault_filter = FaultFilter(json_file=JSON_FILE)
+    kafka_sender = KafkaSender(kafka_output_config, JSON_FILE)
 
     watermark_strategy = WatermarkStrategy.for_bounded_out_of_orderness(Duration.of_millis(5000))
     data_stream = env.from_source(source=kafka_source, watermark_strategy=watermark_strategy, source_name="Kafka Source")
 
     processed_stream = (data_stream
-                        .map(lambda x: MessagePayload(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(lambda x: can_decoder.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(lambda x: fault_filter.execute(x), output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(KafkaSender(kafka_output_config, JSON_FILE),output_type=Types.STRING()))
+                        .map(MessagePayload, output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(can_decoder.execute, output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(fault_filter.execute, output_type=Types.PICKLED_BYTE_ARRAY())  
+                        .map(kafka_sender,output_type=Types.STRING()))
                         
     processed_stream.print() 
 
