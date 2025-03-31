@@ -5,7 +5,7 @@
 
 Real-time processing pipeline for decoding and filtering CAN bus data using Apache Flink.
 
-## 📌 Overview (version v1.0.0-rc.2)
+## 📌 Overview (version v1.0.0-rc.3)
 
 A Flink-based streaming application that:
 1. Consumes compressed CAN data from Kafka
