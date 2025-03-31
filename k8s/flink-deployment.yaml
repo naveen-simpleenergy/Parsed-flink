@@ -6,13 +6,13 @@ metadata:
 spec:
   serviceAccount: flink
   mode: native
-  image: 392698013629.dkr.ecr.us-east-1.amazonaws.com/se-flink-job-stage-eks:v1.12  # Updated Image
+  image: 392698013629.dkr.ecr.us-east-1.amazonaws.com/se-flink-job-stage-eks:v1.0.0-rc.0  # Updated Image
   flinkVersion: v1_20
   flinkConfiguration:
-    taskmanager.numberOfTaskSlots: "4"
-    execution.checkpointing.interval: "30s"
-    execution.checkpointing.timeout: "10min"
-    execution.checkpointing.mode: EXACTLY_ONCE
+    taskmanager.numberOfTaskSlots: "10"
+    # execution.checkpointing.interval: "30s"
+    # execution.checkpointing.timeout: "10min"
+    # execution.checkpointing.mode: EXACTLY_ONCE
     state.checkpoints.dir: "s3://eks-flink-bucket/checkpoints"
     state.savepoints.dir: "s3://eks-flink-bucket/savepoints"
     pipeline.jars: local:///opt/flink/lib/flink-connector-kafka-3.4.0-1.20.jar
