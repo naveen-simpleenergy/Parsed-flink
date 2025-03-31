@@ -5,9 +5,8 @@ from pathlib import Path
 
 class KafkaSender(MapFunction):
     def __init__(self, config_dict, topic_path):
-        json_file_path = f"{Path(__file__).resolve().parent.parent}/{topic_path}"
         self.config_dict = config_dict
-        self.topic_path = json_file_path
+        self.topic_path = topic_path
         self.kafka_producer = None
 
     def open(self, runtime_context: RuntimeContext):

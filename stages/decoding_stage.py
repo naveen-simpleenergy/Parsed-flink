@@ -11,8 +11,7 @@ class CANMessageDecoder(Stage):
         Args:
             dbc_file_path (str): Path to the DBC file.
         """
-        dbc_file_path = f"{Path(__file__).resolve().parent.parent}/{dbc_file}"
-        self.dbc = cantools.database.load_file(dbc_file_path)
+        self.dbc = cantools.database.load_file(dbc_file)
 
     def execute(self, payload: MessagePayload) -> None:
         """

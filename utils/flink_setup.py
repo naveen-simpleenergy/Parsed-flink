@@ -5,13 +5,11 @@ from .config import KafkaConfig
 
 def setup_flink_environment():
     parallelism = KafkaConfig.get_kafka_partition_count()
-    
-    kafka_clients_jar_path = f"file://{Path(__file__).resolve().parent.parent}/jars/kafka-clients-3.4.0.jar"
     config = Configuration()
-    config.set_string("pipeline.classpaths", f"file://{kafka_clients_jar_path}")
-
+    
     env = StreamExecutionEnvironment.get_execution_environment(configuration=config)
     env.set_parallelism(parallelism)
+    env.enable_checkpointing(30000)
     print("Flink environment setup complete")
     return env
 
