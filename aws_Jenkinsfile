@@ -12,7 +12,7 @@ pipeline {
 		Microservice_Name = 'flink-job'
 		// Helm_Directory_Name = 'website-blog'
 		Namespace = 'flink-stage'
-        // ENV_FILE = '/var/lib/jenkins/workspace/flink-job/.env'
+        ENV_FILE = '/var/lib/jenkins/workspace/flink-canparser-job/.env'
 	EKS_Cluster_Name = 'simpleenergy-dev-eks-cluster'
     }
     
@@ -59,7 +59,7 @@ pipeline {
                         env.BRANCH = "release/stage"
                         env.DOCKER_IMAGE_REPOSITORY_NAME="se-flink-job-stage-eks"
                         env.AWS_Region ="us-east-1"
-                        // env.secretId= "website/blog-fe"
+                        env.secretId= "connected-platform/se-stage-flink-canparser-job-envs"
                         env.IMAGE_TAG= GIT_TAG
                         env.KUBERNETES_REPOSITORY_BRANCH = "release/stage"
                     }
@@ -102,72 +102,72 @@ pipeline {
             
         }
         
-        // stage('Fetch Secrets') {
-        //     steps {
-        //         script {
+        stage('Fetch Secrets') {
+            steps {
+                script {
                     
-        //             // Determine the secret ID based on the branch
-        //             if (env.GIT_BRANCH == 'origin/release/stage') {
-        //                 echo "Fetching secrets for stage environment..."
-        //                 secretId = "website/blog-fe"
-        //             } else if (env.GIT_BRANCH == 'origin/release/prod') {
-        //                 echo "Fetching secrets for prod environment..."
-        //                 secretId = '' // Add the correct secret ID for production here
-        //             } else {
-        //                 error "Unsupported branch: ${env.GIT_BRANCH}. Only 'release/stage' and 'release/prod' are allowed."
-        //             }
-        //             // yet to configure stage for this.
-        //             try {
-        //                 echo "Fetching secrets from AWS Secrets Manager..."
+                    // Determine the secret ID based on the branch
+                    if (env.GIT_BRANCH == 'origin/release/stage') {
+                        echo "Fetching secrets for stage environment..."
+                        secretId = "connected-platform/se-stage-flink-canparser-job-envs"
+                    } else if (env.GIT_BRANCH == 'origin/release/prod') {
+                        echo "Fetching secrets for prod environment..."
+                        secretId = '' // Add the correct secret ID for production here
+                    } else {
+                        error "Unsupported branch: ${env.GIT_BRANCH}. Only 'release/stage' and 'release/prod' are allowed."
+                    }
+                    // yet to configure stage for this.
+                    try {
+                        echo "Fetching secrets from AWS Secrets Manager..."
                         
-        //                 // Fetch secrets from AWS Secrets Manager
-        //                 def secretsJson = sh(
-        //                     script: """
-        //                         aws secretsmanager get-secret-value --secret-id "${secretId}" --region "${AWS_Region}" --query SecretString --output text
-        //                     """,
-        //                     returnStdout: true
-        //                 ).trim()
+                        // Fetch secrets from AWS Secrets Manager
+                        def secretsJson = sh(
+                            script: """
+                                aws secretsmanager get-secret-value --secret-id "${secretId}" --region "${AWS_Region}" --query SecretString --output text
+                            """,
+                            returnStdout: true
+                        ).trim()
                         
-        //                 if (!secretsJson) {
-        //                     error "Failed to fetch secrets for secret ID: ${secretId}"
-        //                 }
+                        if (!secretsJson) {
+                            error "Failed to fetch secrets for secret ID: ${secretId}"
+                        }
         
-        //                 // Remove existing .env file if it exists
-        //                 if (fileExists(ENV_FILE)) {
-        //                     echo "Removing existing .env file..."
-        //                     sh "rm -f ${ENV_FILE}"
-        //                 }
+                        // Remove existing .env file if it exists
+                        if (fileExists(ENV_FILE)) {
+                            echo "Removing existing .env file..."
+                            sh "rm -f ${ENV_FILE}"
+                        }
         
-        //                 // Write secrets.json to file
-        //                 writeFile file: 'secrets.json', text: secretsJson
+                        // Write secrets.json to file
+                        writeFile file: 'secrets.json', text: secretsJson
         
-        //                 // Parse JSON and convert to key="value" format
-        //                 def secrets = readJSON file: 'secrets.json'
-        //                 def envFileContent = secrets.collect { key, value ->
-        //                     "${key}=\"${value}\""
-        //                 }.join('\n')
+                        // Parse JSON and convert to key="value" format
+                        def secrets = readJSON file: 'secrets.json'
+                        def envFileContent = secrets.collect { key, value ->
+                            "${key}=\"${value}\""
+                        }.join('\n')
         
-        //                 // Write to .env file
-        //                 writeFile file: ENV_FILE, text: envFileContent
+                        // Write to .env file
+                        writeFile file: ENV_FILE, text: envFileContent
         
-        //                 // Clean up temporary secrets.json
-        //                 sh "rm -f secrets.json"
+                        // Clean up temporary secrets.json
+                        sh "rm -f secrets.json"
         
-        //                 echo "Secrets fetched and added to ${ENV_FILE} successfully."
-        //             } catch (Exception e) {
-        //                 echo "An error occurred while fetching secrets: ${e.getMessage()}"
-        //                 error "Failed to fetch and process secrets."
-        //             }
-        //         }
-        //     }
-        //     post {
-        //         failure {
-        //             script {
-        //                 sendGoogleChatNotification("Build Number: ${currentBuild.fullDisplayName} - env fetch Failed 😬")
-        //             }
-        //         }
-        //     }
-        // }
+                        echo "Secrets fetched and added to ${ENV_FILE} successfully."
+                    } catch (Exception e) {
+                        echo "An error occurred while fetching secrets: ${e.getMessage()}"
+                        error "Failed to fetch and process secrets."
+                    }
+                }
+            }
+            post {
+                failure {
+                    script {
+                        sendGoogleChatNotification("Build Number: ${currentBuild.fullDisplayName} - env fetch Failed 😬")
+                    }
+                }
+            }
+        }
         
         stage('build') {
             steps {
@@ -325,7 +325,7 @@ pipeline {
             post{
                 success {
                     script {
-                        sendGoogleChatNotification("Build Number: ${currentBuild.fullDisplayName} -  version: ${IMAGE_TAG} Deployment Successful ⚡")
+                        sendGoogleChatNotification("Build Number: ${currentBuild.fullDisplayName} -  version: ${IMAGE_TAG} Build Successful ⚡")
                     }
                 }
             }
