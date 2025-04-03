@@ -3,8 +3,8 @@ pipeline {
    
     environment {
         GOOGLE_CHAT_WEBHOOK = "https://chat.googleapis.com/v1/spaces/AAAAmNzVX-0/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=-ehw-co0VWGnsDY5SLqofPk6gX0TNB5vSvD_O0zO4Eo"
-        AWS_Account_Id = "392698013629"
-        AWS_Region = "us-east-1"
+        AWS_Account_Id = "534375227638"
+        AWS_Region = "ap-south-1"
         Git_Credentials = 'github-admin-pat'
 		Code_Repo = 'https://github.com/Simpleenergy-Pvt-Ltd/se-flink-canparser-job.git'
 		// Helm_Repo = 'https://github.com/Simpleenergy-Pvt-Ltd/se-eks-manifest.git'
@@ -57,7 +57,7 @@ pipeline {
                     }
                     else if(env.GIT_BRANCH == 'origin/release/stage'){
                         env.BRANCH = "release/stage"
-                        env.DOCKER_IMAGE_REPOSITORY_NAME="se-flink-job-stage-eks"
+                        env.DOCKER_IMAGE_REPOSITORY_NAME="se-stage-flink-canparer"
                         env.AWS_Region ="us-east-1"
                         env.secretId= "connected-platform/se-stage-flink-canparser-job-envs"
                         env.IMAGE_TAG= GIT_TAG
@@ -181,7 +181,7 @@ pipeline {
 
                     echo "Tagged - $latestTagInfo"
                     
-                    env.DOCKER_IMAGE_REPOSITORY_NAME="se-flink-job-stage-eks"
+                    env.DOCKER_IMAGE_REPOSITORY_NAME="se-stage-flink-canparer"
                     
                     
                     sh " docker build -t ${env.DOCKER_IMAGE_REPOSITORY_NAME}:${env.IMAGE_TAG} . "
