@@ -16,9 +16,19 @@ class FaultFilter(Stage):
         Args:
             payload (MessagePayload): The message payload to filter.
         """
-        payload.filtered_signal_value_pair = self.filter_faults(payload.signal_value_pair)
+        if payload.error_flag:
+            return payload
 
-        return payload
+        try:
+            payload.filtered_signal_value_pair = self.filter_faults(payload.signal_value_pair)
+
+        except Exception as e:
+            print(f'[FaultFilter]: error {e} occurred while filtering {payload.vin} at {payload.event_time}')
+            payload.error_tag = e
+            payload.error_flag = True
+
+        finally:
+            return payload
         
     def _load_fault_signals(self, filepath: str) -> set:
         try:

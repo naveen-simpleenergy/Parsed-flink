@@ -29,8 +29,8 @@ def main():
                         .map(MessagePayload, output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(can_decoder.execute, output_type=Types.PICKLED_BYTE_ARRAY())  
                         .map(fault_filter.execute, output_type=Types.PICKLED_BYTE_ARRAY())  
-                        .map(kafka_sender,output_type=Types.STRING()))
-                        
+                        .map(kafka_sender, output_type=Types.STRING()))
+    
     processed_stream.print() 
 
     env.execute("Flink_parser")
