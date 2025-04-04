@@ -19,7 +19,9 @@ class KafkaDataProducer(CustomKafkaProducer):
         """
         Process and send data to specific Kafka topics based on the data content.
         """
-        payload.kafka_producer_error = []
+        if payload.error_flag:
+            return self.error_data_producer(payload)
+
         serialized_processed_data = self.convert_to_serializable(payload.filtered_signal_value_pair)  
     
         vin = payload.vin
@@ -57,12 +59,14 @@ class KafkaDataProducer(CustomKafkaProducer):
                     )
                     payload.success_counts += 1
             except Exception as e:
-                log("[Data Producer]: Failed to send the complete processed data to Kafka.", level=logging.ERROR)
-                payload.kafka_producer_error.append((data, topic))
-        
+                log(f"[Data Producer]: Failed to send the complete processed data to Kafka of {payload.vin} at {payload.event_time}.", level=logging.ERROR)
+                payload.error_flag = True
+                return self.error_data_producer(payload)
+
         super().flush()
         log(f"[Data Producer]: Message batch for VIN {payload.vin} is processed.", level=logging.INFO)
         return topics_data
+
     
     def prepare_topics_data(self, signal_value_map, vin, event_time):
         """
@@ -99,3 +103,13 @@ class KafkaDataProducer(CustomKafkaProducer):
         Create a key by combining VIN and event time.
         """
         return f"{vin}_{event_time}"
+    
+
+    def error_data_producer(self, payload: MessagePayload):
+        """
+        Handle error data by sending it to the DLQ topic.
+        """  
+        super().send_data(data=payload.message_json, topic=payload.dlq_topic)
+        log(f"[Data Producer]: {payload.vin} data of event time {payload.event_time} is sent to {payload.dlq_topic} topic", level=logging.INFO)
+        
+        return {"vin": payload.vin, "event_time": payload.event_time , "error": payload.error_tag}
