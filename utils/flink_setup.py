@@ -8,7 +8,7 @@ def setup_flink_environment():
     config = Configuration()
     
     env = StreamExecutionEnvironment.get_execution_environment(configuration=config)
-    env.set_parallelism(parallelism=2)
+    env.set_parallelism(parallelism)
     env.enable_checkpointing(30000)
     print("Flink environment setup complete")
     return env

@@ -45,27 +45,23 @@ class FaultFilter(Stage):
     def filter_faults(self, payload: MessagePayload) -> Dict[str, float]:
     
         relevant_faults = self.fault_signals & payload.signal_value_pair.keys()
-
+    
         if not relevant_faults:
             return payload.signal_value_pair
 
-        vin = payload.vin     
-        signals_map = {}
+        vin = payload.vin
+        stored_faults = self.redis_client.hgetall(f"fstate_{vin}")
 
-        stored_faults = self.redis_client.hgetall("fstate_"+vin)
-        
-        for signal_name, signal_value in payload.signal_value_pair.items():
-
-            if signal_name in relevant_faults:
-                stored_value = stored_faults.get(signal_name)
-                if stored_value is None or stored_value != signal_value:
-                    self.redis_client.hset("fstate_"+vin, signal_name, signal_value)
-                    signals_map[signal_name] = signal_value
+        for signal_name in relevant_faults:
+            current_value = payload.signal_value_pair[signal_name]
+            stored_value = stored_faults.get(signal_name)
+            
+            if stored_value == current_value:
+                del payload.signal_value_pair[signal_name]
             else:
-                signals_map[signal_name] = signal_value
+                self.redis_client.hset(f"fstate_{vin}", signal_name, current_value)
 
-        return signals_map
-
+        return payload.signal_value_pair
 
 
 

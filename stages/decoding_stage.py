@@ -27,7 +27,7 @@ class CANMessageDecoder(Stage):
 
         try:
             message = payload.message_json
-            can_id_hex = message.get("raw_can_id")
+            can_id_hex = payload.can_id_hex
             
             can_id_29bit = int(str(can_id_hex), 16) & 0x1FFFFFFF
             decoded_message = self.dbc.get_message_by_frame_id(can_id_29bit)

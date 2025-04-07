@@ -1,13 +1,12 @@
 from producer import KafkaSender 
-from stages import CANMessageDecoder, FaultFilter, FilterWrapper
-from utils import KafkaConfig, MessagePayload, RedisClient, setup_flink_environment
+from stages import CANMessageDecoder, FilterWrapper
+from utils import KafkaConfig, MessagePayload, setup_flink_environment
 from pyflink.common.typeinfo import Types
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.common import Duration
 from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
-import os
 
 BASE_DIR = Path(__file__).parent
 DBC_FILE_PATH = str(BASE_DIR / "dbc_files/SimpleOneGen1_V2_2.dbc")

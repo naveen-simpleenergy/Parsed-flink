@@ -29,7 +29,7 @@ class MessagePayload:
         """
         json_message = json.loads(binary_message)
         self.message_json = json_message
-        self.vin = json_message.get('username', json_message.get('vin', None))
+        self.vin = json_message.get('vin', None)
         self.error_flag=False
         
         # Processed Consumer Variables
@@ -40,7 +40,6 @@ class MessagePayload:
         
         # Common
         self.success_counts = 0
-        self.kafka_producer_error = []
         self.dlq_topic = "can-dlq"
         self.error_tag = None
 
