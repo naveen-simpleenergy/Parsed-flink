@@ -29,18 +29,8 @@ class MessagePayload:
         """
         json_message = json.loads(binary_message)
         self.message_json = json_message
-        self.username = json_message.get('username', json_message.get('vin', None))
-        self.vin = json_message.get('username', json_message.get('vin', None))
-        
-        # Raw Consumer Variables
-        self.compressed = json_message.get('payload', None)
-        self.decompressed = None
-        self.parsed = None
-        self.can_decoded_data = None
-        self.can_decoding_errors = {
-            'dbc': [],
-            'others': [],
-        }
+        self.vin = json_message.get('vin', None)
+        self.error_flag=False
         
         # Processed Consumer Variables
         self.signal_value_pair = {}
@@ -50,52 +40,9 @@ class MessagePayload:
         
         # Common
         self.success_counts = 0
-        self.kafka_producer_error = []
+        self.dlq_topic = "can-dlq"
+        self.error_tag = None
 
-    def set_decompressed_data(self, data: bytes):
-        """
-        Set the decompressed data.
-
-        Args:
-            data (bytes): Decompressed data bytes.
-        """
-        self.decompressed = data
-
-    def set_parsed_data(self, data: Any):
-        """
-        Set the parsed data from the decompressed message.
-
-        Args:
-            data (Any): Parsed data.
-        """
-        self.parsed = data
-
-    def set_can_decoded_data(self, data: Any):
-        """
-        Set the CAN decoded data.
-
-        Args:
-            data (Any): CAN decoded data.
-        """
-        self.can_decoded_data = data
-
-    def set_can_decoding_errors(self, errors: str):
-        """
-        Set the error message from CAN decoding.
-
-        Args:
-            errors (str): CAN decoding error message.
-        """
-        self.can_decoding_errors = errors
-
-    def set_kafka_producer_error(self, error: str):
-        """
-        Set the error message from Kafka producer.
-
-        Args:
-            error (str): Error message from Kafka producer.
-        """
-        self.kafka_producer_error = error
 
     def __str__(self):
-        return f"MessagePayload(username={self.username}, vin={self.vin})"
+        return f"MessagePayload(vin={self.vin})"
