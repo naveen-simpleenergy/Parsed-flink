@@ -1,15 +1,16 @@
 import json
 from typing import Dict
-from utils.message_payload import MessagePayload       
+from utils import MessagePayload, RedisClient      
 from interface import Stage
 from pathlib import Path
 
 class FaultFilter(Stage):
-    def __init__(self, json_file):   
+    def __init__(self, json_file : str, redis_client : RedisClient):   
         
         self.fault_signals = self._load_fault_signals(json_file)
+        self.redis_client = redis_client
     
-    def execute(self, payload: MessagePayload) -> None:
+    def execute(self, payload: MessagePayload) -> MessagePayload:
         """
         Filter out fault signals from the payload data.
         
@@ -20,7 +21,7 @@ class FaultFilter(Stage):
             return payload
 
         try:
-            payload.filtered_signal_value_pair = self.filter_faults(payload.signal_value_pair)
+            payload.filtered_signal_value_pair = self.filter_faults(payload)
 
         except Exception as e:
             print(f'[FaultFilter]: error {e} occurred while filtering {payload.vin} at {payload.event_time}')
@@ -40,13 +41,30 @@ class FaultFilter(Stage):
             print(f"Error loading fault signals: {str(e)}")
             return set()
 
-    def filter_faults(self, input_data: Dict[str, float]) -> Dict[str, float]:
-        relevant_faults = self.fault_signals & input_data.keys()
-        for fault_signal in relevant_faults:
-            if input_data[fault_signal] == 0:
-                del input_data[fault_signal]
+
+    def filter_faults(self, payload: MessagePayload) -> Dict[str, float]:
+    
+        relevant_faults = self.fault_signals & payload.signal_value_pair.keys()
+
+        if not relevant_faults:
+            return payload.signal_value_pair
+
+        vin = payload.vin     
+        signals_map = {}
+
+        stored_faults = self.redis_client.hgetall("fstate_"+vin)
         
-        return input_data
+        for signal_name, signal_value in payload.signal_value_pair.items():
+
+            if signal_name in relevant_faults:
+                stored_value = stored_faults.get(signal_name)
+                if stored_value is None or stored_value != signal_value:
+                    self.redis_client.hset("fstate_"+vin, signal_name, signal_value)
+                    signals_map[signal_name] = signal_value
+            else:
+                signals_map[signal_name] = signal_value
+
+        return signals_map
 
 
 
