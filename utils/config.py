@@ -9,9 +9,9 @@ load_dotenv()
 
 class KafkaConfig:
    
-    CONSUMER_BROKER = os.getenv("PROD_KAFKA_BROKER")
-    CONSUMER_USERNAME = os.getenv("PROD_KAFKA_USERNAME")
-    CONSUMER_PASSWORD = os.getenv("PROD_KAFKA_PASSWORD")
+    CONSUMER_BROKER = os.getenv("STAGE_KAFKA_BROKER")
+    CONSUMER_USERNAME = os.getenv("STAGE_KAFKA_USERNAME")
+    CONSUMER_PASSWORD = os.getenv("STAGE_KAFKA_PASSWORD")
     INPUT_TOPIC = os.getenv("INPUT_TOPIC")
     CONSUMER_GROUP_ID = os.getenv("CONSUMER_GROUP_ID")
     
