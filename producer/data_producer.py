@@ -34,9 +34,6 @@ class KafkaDataProducer(CustomKafkaProducer):
                     for signal_name, value in data.items():
                         if signal_name in ["vin", "event_time"]: continue
                         
-                        if value != 1:
-                            log("[Data Producer]: Fault Signal Value is not 1.", level=logging.CRITICAL, payload_data=data)
-                        
                         packet = {
                             "vin": vin, 
                             "event_time": event_time,
