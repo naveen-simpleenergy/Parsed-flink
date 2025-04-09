@@ -23,7 +23,7 @@ class CANMessageDecoder(Stage):
         Args:
             payload (MessagePayload): The message payload to decode.
         """
-        payload.time_in_millis_decode_start = int(round(time.time() * 1000))
+        payload.time_in_millis_decode_start = time.time_ns()
 
         if payload.error_flag:
             return payload
@@ -42,9 +42,9 @@ class CANMessageDecoder(Stage):
             decoded_signals = decoded_message.decode(data_bytes, decode_choices=False)
             
             payload.signal_value_pair = decoded_signals
-            payload.time_in_millis_decode_end = int(round(time.time() * 1000))
+            payload.time_in_millis_decode_end = time.time_ns()
 
-            log(f'[CANMessageDecoder]: Decoding stage took {payload.time_in_millis_decode_end-payload.time_in_millis_decode_start} ms for {payload.vin} at {payload.event_time}', level=logging.INFO)
+            log(f'[CANMessageDecoder]: Decoding stage took {payload.time_in_millis_decode_end-payload.time_in_millis_decode_start} ns for {payload.vin} at {payload.event_time}', level=logging.INFO)
         
         except Exception as e:
             log(f'[CANMessageDecoder]: error {e} occured while decoding {payload.vin} at {payload.event_time}', level=logging.CRITICAL)
