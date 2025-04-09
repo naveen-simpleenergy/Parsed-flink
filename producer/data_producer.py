@@ -3,7 +3,7 @@ from logger import log
 from cantools.database.namedsignalvalue import NamedSignalValue
 from .base_producer import CustomKafkaProducer
 from utils import MessagePayload
-import concurrent.futures
+import time
 import logging
 
 class KafkaDataProducer(CustomKafkaProducer):
@@ -20,6 +20,8 @@ class KafkaDataProducer(CustomKafkaProducer):
         """
         Process and send data to specific Kafka topics based on the data content.
         """
+
+        payload.time_in_millis_producer_start = int(round(time.time() * 1000))
         if payload.error_flag:
             return self.error_data_producer(payload)
  
@@ -42,6 +44,9 @@ class KafkaDataProducer(CustomKafkaProducer):
 
     
         log(f"[Data Producer]: Message batch for VIN {payload.vin} is processed.", level=logging.INFO)
+        payload.time_in_millis_producer_end = int(round(time.time() * 1000))
+
+        log(f"[Data Producer]: Producer send took {payload.time_in_millis_producer_end-payload.time_in_millis_producer_start} ms for {payload.vin} at {payload.event_time}.", level=logging.INFO)
         return topics_data
  
     def prepare_topics_data(self, signal_value_map : dict, vin : str, event_time : int) -> dict:

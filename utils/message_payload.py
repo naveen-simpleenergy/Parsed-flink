@@ -1,5 +1,6 @@
 from typing import Dict, Any
 import json
+import time
 
 class MessagePayload:
     """
@@ -42,6 +43,12 @@ class MessagePayload:
         self.dlq_topic = "can-dlq"
         self.error_tag = None
 
+        # Time Tracking
+        self.time_in_millis_MessagePayload_instance = int(round(time.time() * 1000))
+        self.time_in_millis_decode_start = None
+        self.time_in_millis_decode_end = None
+        self.time_in_millis_producer_start = None
+        self.time_in_millis_producer_end = None
 
     def __str__(self):
         return f"MessagePayload(vin={self.vin})"
