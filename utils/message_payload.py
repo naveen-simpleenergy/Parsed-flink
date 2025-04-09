@@ -34,7 +34,6 @@ class MessagePayload:
         
         # Processed Consumer Variables
         self.signal_value_pair = {}
-        self.filtered_signal_value_pair = {}
         self.can_id_hex = json_message.get('raw_can_id', None)
         self.event_time = json_message.get('event_time', None)
         
