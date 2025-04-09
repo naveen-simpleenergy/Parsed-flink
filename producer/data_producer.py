@@ -30,7 +30,7 @@ class KafkaDataProducer(CustomKafkaProducer):
         for topic, data in topics_data.items():
             try:
                 super().send_data(
-                    key=self.create_key(vin, event_time),
+                    key=self.create_key(vin),
                     data=data, 
                     topic=topic
                 )
@@ -40,7 +40,7 @@ class KafkaDataProducer(CustomKafkaProducer):
                 payload.error_flag = True
                 return self.error_data_producer(payload)
 
-        super().flush()
+    
         log(f"[Data Producer]: Message batch for VIN {payload.vin} is processed.", level=logging.INFO)
         return topics_data
  
@@ -63,11 +63,11 @@ class KafkaDataProducer(CustomKafkaProducer):
         return topics_data
     
     
-    def create_key(self, vin, event_time):
+    def create_key(self, vin):
         """
         Create a key by combining VIN and event time.
         """
-        return f"{vin}_{event_time}"
+        return f"{vin}"
     
     def error_data_producer(self, payload: MessagePayload):
         """
