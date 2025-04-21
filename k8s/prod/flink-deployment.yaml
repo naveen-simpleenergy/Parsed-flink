@@ -6,7 +6,7 @@ metadata:
 spec:
   serviceAccount: flink-prod
   mode: native
-  image: 534375227638.dkr.ecr.ap-south-1.amazonaws.com/se-prod-flink-can-parser:v1.0.5
+  image: 534375227638.dkr.ecr.ap-south-1.amazonaws.com/se-prod-flink-can-parser:v1.0.7
   flinkVersion: v1_20
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: "10"
