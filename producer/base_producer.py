@@ -29,8 +29,7 @@ class CustomKafkaProducer():
             sasl_plain_username=config['sasl_username'],
             sasl_plain_password=config['sasl_password'],
             linger_ms=10,                  
-            batch_size=32768,              
-            # compression_type='lz4',        
+            batch_size=32768,                      
             max_in_flight_requests_per_connection=5,  
             acks=1,                      
             retries=5,                     
@@ -63,28 +62,3 @@ class CustomKafkaProducer():
             log("[Producer] Critical Error", level=logging.CRITICAL, exception=e)
             raise
 
-        except BufferError:
-
-            log('[Producer]: Local producer queue is full, consider backing off', level=logging.WARNING)
-            queue_length = len(self.producer)
-            log(f'[Producer]: Current producer queue length: {queue_length}', level=logging.WARNING)
-            
-            metrics = self.producer.metrics()
-            log(f'[Producer]: Kafka producer metrics: {json.dumps(metrics, indent=2)}', level=logging.INFO)
-
-            memory_info = psutil.virtual_memory()
-            cpu_usage = psutil.cpu_percent(interval=1)
-            log(f'[Producer]: System memory usage: {memory_info.percent}%', level=logging.INFO)
-            log(f'[Producer]: CPU usage: {cpu_usage}%', level=logging.INFO)
-            
-            time.sleep(1)
-        except Exception as e:
-            log('[Producer]: Kafka Producer Unexpected error', level=logging.CRITICAL, exception=e, data=data)
-            raise e
-
-    def flush(self):
-        try:
-            self.producer.flush()
-            log(f'[Producer]: All messages flushed successfully by Producer.', level=logging.INFO)
-        except Exception as e:
-            log(f'[Producer]: Unable to perform the flush.', level=logging.CRITICAL, exception=e)
