@@ -27,6 +27,12 @@ class KafkaDataProducer(CustomKafkaProducer):
         Process and send data to specific Kafka topics based on the data content.
         """
 
+        def delivery_callback(meta):
+            log(f"Delivered to {meta.topic}[{meta.partition}]")
+
+        def error_callback(exc):
+            log(f"Delivery failed: {exc}", level=logging.ERROR)
+
         try:
             payload.time_in_millis_producer_start = time.time_ns()
             if payload.error_flag:
@@ -36,26 +42,30 @@ class KafkaDataProducer(CustomKafkaProducer):
             event_time = payload.event_time
             topics_data = self.prepare_topics_data(payload, vin, event_time)
 
-            print(f"topics_data : {topics_data}")
 
             if not isinstance(topics_data, tuple):
 
-                super().send_data(  key=self.create_key(vin),
+                future= super().send_data(  key=self.create_key(vin),
                                     data=topics_data, 
                                     topic=self.topics[str(payload.can_id_int)]
                                 )
+                future.add_callback(delivery_callback)
+                future.add_errback(error_callback)
             
             else:
 
-                super().send_data( key=self.create_key(vin),
+                future_fault=super().send_data( key=self.create_key(vin),
                                     data=topics_data[0], 
                                     topic="Faults"
                                 )
-                
-                super().send_data( key=self.create_key(vin),
+                future_fault.add_callback(delivery_callback)
+                future_fault.add_errback(error_callback)
+                future_nonFault=super().send_data( key=self.create_key(vin),
                                     data=topics_data[1], 
                                     topic=self.topics[str(payload.can_id_int)]["non_faults"]
                                 )
+                future_nonFault.add_callback(delivery_callback)
+                future_nonFault.add_errback(error_callback)
 
         except Exception as e:
                 log(f"[Data Producer]: Failed to send the complete processed data to Kafka of {payload.vin} at {payload.event_time} due to error {e}.", level=logging.ERROR)
