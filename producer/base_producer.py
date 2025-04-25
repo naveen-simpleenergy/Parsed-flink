@@ -28,12 +28,11 @@ class CustomKafkaProducer():
             sasl_mechanism=config['sasl_mechanism'],
             sasl_plain_username=config['sasl_username'],
             sasl_plain_password=config['sasl_password'],                
-            batch_size=16384,  
-            linger_ms=500,              
+            batch_size=16384,               
+            request_timeout_ms=180000,
             max_in_flight_requests_per_connection=1,
-            acks=1,                      
-            retries=5,                    
-            buffer_memory=134217728
+            retries=2,
+            acks=1                
         )
 
 
