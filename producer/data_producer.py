@@ -28,7 +28,7 @@ class KafkaDataProducer(CustomKafkaProducer):
         """
 
         def delivery_callback(meta):
-            log(f"Delivered to {meta.topic}[{meta.partition}]")
+            pass
 
         def error_callback(exc):
             log(f"Delivery failed: {exc}", level=logging.ERROR)
